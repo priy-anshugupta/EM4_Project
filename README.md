@@ -7,42 +7,68 @@
 
 This project implements the **Big M Method**, a technique in **Linear Programming** used to find an initial Basic Feasible Solution (BFS) when the standard form of an LP problem contains **≥ (greater than or equal to)** or **= (equality)** constraints. By introducing artificial variables with a heavy penalty (M), the algorithm forces them out of the basis to find the optimal solution.
 
+The project ships with **two interfaces**:
+1. **Streamlit Web App** (`app.py`) — A modern, dark-themed web UI with interactive Plotly charts, sensitivity analysis, duality engine, and more.
+2. **CLI Mode** (`main.py`) — A terminal-based solver with Rich-formatted tableaux and matplotlib graphs.
+
+---
+
 ### ✨ Key Features
-- **Interactive CLI Menu:** A fully colored, interactive terminal interface powered by `rich`.
-- **Custom Problem Solver:** Enter your own custom constraints and objective functions interactively!
-- **Beautiful Tableau Printing:** Step-by-step Simplex tableaus printed clearly with color-coded Z-rows and pivot markers.
-- **2D Visualizations:** Automatically plots the feasible regions, constraint lines, and objective functions for 2-variable problems using `matplotlib`.
-- **Poster-Ready Artifacts:** Automatically saves high-resolution `.png` graphs to your folder for use in your assignment presentations or posters!
-- **Educational Mode:** Built-in explanation option to learn the steps of the Big M Method directly from the terminal.
+
+| Feature | Description |
+|:---|:---|
+| **Interactive Solver** | Input any LP problem (MAX / MIN) with mixed ≤, ≥, = constraints |
+| **Step-by-Step Tableaux** | Color-coded simplex iterations with pivot element highlighting |
+| **2D Feasible Region** | Interactive Plotly chart showing constraints, feasible region, corner points & optimal solution |
+| **3D Objective Surface** | 3D surface plot of the objective function over the feasible region |
+| **Simplex Path Animation** | Visualize the vertex-to-vertex path the simplex algorithm takes |
+| **Sensitivity Analysis** | Shadow prices, binding constraints, allowable RHS & objective coefficient ranges |
+| **Parametric What-If** | Vary a coefficient or RHS value and watch the optimal Z change live |
+| **Duality Engine** | Auto-construct the Dual LP, verify Strong Duality Theorem & Complementary Slackness |
+| **Educational Learn Tab** | Big M algorithm walkthrough, Big M vs Two-Phase comparison, key terms glossary |
+| **Pre-Built Examples** | 4 one-click examples (MAX & MIN) with instant solve and visualization |
+| **CLI Mode** | Terminal solver with Rich tables and matplotlib graphs (original `main.py`) |
 
 ---
 
 ## ⚙️ Requirements & Installation
 
-To run this beautifully formatted script, you need to install standard mathematical and UI libraries.
+**Python 3.7+** is required.
 
 ```bash
-pip install numpy matplotlib rich
+pip install -r requirements.txt
 ```
 
-*Python version: **3.7 or higher** required.*
+This installs: `streamlit`, `numpy`, `plotly`, `scipy`, `streamlit-lottie`, `requests`, `rich`, `matplotlib`
 
 ---
 
 ## 🚀 How to Run
 
-1. Open your terminal in the project directory.
-2. Run the main python file:
+### Streamlit Web App (Recommended)
 
 ```bash
-python main.py
+streamlit run app.py
 ```
 
-3. You will be greeted with the Main Menu. Choose an option:
-    - `[1]` **Run pre-coded Examples:** Automatically solves 3 pre-configured examples, displays the Simplex iterations, and plots/saves the 2D graphs.
-    - `[2]` **Interactive Mode:** Step-by-step prompts to input your exact variables, constraint values, and equations.
-    - `[3]` **Learn:** Detailed explanation of the Big M algorithm directly in the terminal.
-    - `[4]` **Exit**
+Opens at [http://localhost:8501](http://localhost:8501) with 7 tabs:
+
+| Tab | Purpose |
+|:---|:---|
+| 🏠 **Home** | Overview, feature cards, algorithm flowchart |
+| 🧮 **Solver** | Input & solve any LP problem, view tableau iterations |
+| 📊 **Visualization** | Feasible region, 3D surface, simplex path charts |
+| 📈 **Sensitivity** | Shadow prices, allowable ranges, parametric what-if |
+| 🔄 **Duality** | Primal vs Dual side-by-side, strong duality verification |
+| 📚 **Learn** | Big M algorithm steps, comparison table, glossary |
+| 🏆 **Examples** | 4 pre-built problems — solve with one click |
+
+### CLI Mode (Original)
+
+```bash
+pip install numpy matplotlib rich
+python main.py
+```
 
 ---
 
@@ -80,9 +106,13 @@ Repeat until optimal:
 ```
 EM4_Project/
 │
-├── main.py             ← Main solver, UI, and graphing implementation
-├── README.md           ← Project documentation (This file)
-└── *.png               ← Automatically generated graphs (saved during runtime)
+├── app.py              ← Streamlit web application (7-tab UI)
+├── solver.py           ← Core Big M solver, sensitivity, duality & parametric engine
+├── utils.py            ← Plotly visualizations, LaTeX formatting, chart helpers
+├── main.py             ← Original CLI solver with Rich tables & matplotlib
+├── requirements.txt    ← Python dependencies
+├── README.md           ← Project documentation (this file)
+└── *.png               ← Auto-generated graphs (saved during CLI runtime)
 ```
 
 ---
@@ -97,6 +127,9 @@ EM4_Project/
 | Surplus Variable    | Subtracted from ≥ constraint to convert to equality. |
 | Pivot               | Row operation to bring a variable into the basis.    |
 | BFS                 | Basic Feasible Solution — a valid starting point.    |
+| Shadow Price        | Rate of change of Z per unit change in a constraint's RHS. |
+| Dual Problem        | A companion LP derived from the primal; provides bounds and insights. |
+| Strong Duality      | Primal optimal Z* equals Dual optimal Z*.            |
 
 ---
 
@@ -104,7 +137,8 @@ EM4_Project/
 
 - The solver uses `M = 1,000,000` — for extremely ill-conditioned problems, numerical rounding errors may occur.
 - All RHS (Right Hand Side) values must be non-negative (the code attempts to auto-fix this by multiplying raw inputs by -1).
-- Visualizations (`matplotlib` graphs) are strictly limited to **2-variable** problems due to 2D spatial restrictions.
+- 2D/3D visualizations are limited to **2-variable** problems.
+- Parametric and sensitivity analysis use a perturbation-based approach (not exact inverse basis).
 
 ---
 

@@ -293,7 +293,7 @@ with st.sidebar:
     | Name | Roll |
     |:--|:--|
     | Priyanshu Gupta | 24101B0037 |
-    | Aashutosh Mahajan | 24101b0063 |
+    | Aashutosh Mahajan | 24101B0063 |
     | Atharv Raut | 24101B0052 |
     | Aditya Patra | 24101B0072 |
     | Ronak Boddu | 24101B0044 |
