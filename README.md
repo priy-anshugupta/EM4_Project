@@ -122,7 +122,7 @@ EM4_Project/
 | Name | Roll Number | Role |
 | :--- | :--- | :--- |
 | **Priyanshu Gupta** | 24101B0037 | Team Leader (TL) |
-| **Aashutosh Mahajan** | 24101b0063 | Team Member |
+| **Aashutosh Mahajan** | 24101B0063 | Team Member |
 | **Atharv Raut** | 24101B0052 | Team Member |
 | **Aditya Patra** | 24101B0072 | Team Member |
 | **Ronak Boddu** | 24101B0044 | Team Member |
