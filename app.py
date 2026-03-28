@@ -298,6 +298,7 @@ with st.sidebar:
     | Atharv Raut | 24101B0052 |
     | Aditya Patra | 24101B0072 |
     | Ronak Boddu | 24101B0044 |
+    | Prem Ranmale | 24101B0018 |
     """)
     st.markdown("---")
     st.markdown("##### 🔧 Quick Settings")

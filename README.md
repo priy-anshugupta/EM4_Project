@@ -160,5 +160,6 @@ EM4_Project/
 | **Atharv Raut** | 24101B0052 | Team Member |
 | **Aditya Patra** | 24101B0072 | Team Member |
 | **Ronak Boddu** | 24101B0044 | Team Member |
+| **Prem Ranmale** | 24101B0018 | Team Member |
 
 *Assignment 9 | EM-4 (BSC07) | INFT Department*
