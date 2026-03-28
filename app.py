@@ -28,7 +28,7 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────────────────────
-#  INJECTED CSS — Dark Glassmorphism Theme
+#  INJECTED CSS — Dark Theme
 # ─────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -66,26 +66,19 @@ st.markdown("""
     transform: translateY(-2px);
 }
 
-/* ── Neon Headers ── */
+/* ── Headers ── */
 .neon-title {
     font-family: 'Inter', sans-serif;
     font-weight: 900;
     font-size: 2.8rem;
-    background: linear-gradient(135deg, #00d4ff, #39ff14, #ff006e);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #e6ecff;
     text-align: center;
     margin-bottom: 8px;
-    letter-spacing: -1px;
-    animation: glow 3s ease-in-out infinite;
-}
-@keyframes glow {
-    0%, 100% { filter: drop-shadow(0 0 8px rgba(0,212,255,0.4)); }
-    50% { filter: drop-shadow(0 0 20px rgba(57,255,20,0.4)); }
+    letter-spacing: 1px;
 }
 .neon-subtitle {
     font-family: 'JetBrains Mono', monospace;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,255,255,0.6);
     text-align: center;
     font-size: 1rem;
     margin-bottom: 30px;
@@ -117,18 +110,12 @@ st.markdown("""
     border-radius: 16px;
     padding: 24px;
     text-align: center;
-    animation: borderPulse 2s ease-in-out infinite;
-}
-@keyframes borderPulse {
-    0%, 100% { border-color: rgba(57,255,20,0.3); }
-    50% { border-color: rgba(57,255,20,0.7); }
 }
 .optimal-z {
     font-size: 3rem;
     font-weight: 900;
     color: #39ff14;
     font-family: 'JetBrains Mono', monospace;
-    text-shadow: 0 0 30px rgba(57,255,20,0.4);
 }
 .optimal-label { color: rgba(255,255,255,0.7); font-size: 1rem; margin-bottom: 8px; }
 
@@ -222,21 +209,44 @@ st.markdown("""
 
 /* ── Streamlit overrides ── */
 .stTabs [data-baseweb="tab-list"] {
-    background: rgba(255,255,255,0.03);
-    border-radius: 12px;
-    padding: 6px;
-    gap: 4px;
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 14px;
 }
 .stTabs [data-baseweb="tab"] {
-    border-radius: 8px;
-    color: rgba(255,255,255,0.6);
+    flex: 1 1 0;
+    justify-content: center;
+    text-align: center;
+    border-radius: 10px;
+    color: rgba(224,224,224,0.75);
     font-weight: 600;
-    padding: 10px 20px;
+    padding: 12px 10px;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    border: 1px solid transparent;
+}
+.stTabs [data-baseweb="tab"]:hover {
+    background: rgba(0,212,255,0.08);
+    color: #e6ecff;
 }
 .stTabs [aria-selected="true"] {
-    background: rgba(0,212,255,0.12) !important;
+    background: linear-gradient(135deg, rgba(0,212,255,0.18), rgba(0,212,255,0.1)) !important;
     color: #00d4ff !important;
+    border-color: rgba(0,212,255,0.35) !important;
     border-bottom: none !important;
+}
+@media (max-width: 900px) {
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 6px;
+        padding: 6px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        font-size: 0.9rem;
+        padding: 10px 8px;
+    }
 }
 .stNumberInput input, .stSelectbox select, .stTextInput input {
     background: rgba(255,255,255,0.05) !important;
@@ -266,19 +276,6 @@ div[data-testid="stExpander"] {
 h1, h2, h3, h4, h5, h6 { color: #e0e0e0 !important; }
 p, li, span, label, div { color: #c0c0c0; }
 
-/* ── Confetti ── */
-@keyframes confettiFall {
-    0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-}
-.confetti-piece {
-    position: fixed;
-    width: 10px;
-    height: 10px;
-    top: -10px;
-    z-index: 9999;
-    animation: confettiFall 3s ease-in forwards;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -317,7 +314,7 @@ tabs = st.tabs(["🏠 Home", "🧮 Solver", "📊 Visualization", "📈 Sensitiv
 #  TAB 0: HOME
 # ═══════════════════════════════════════════════════════════
 with tabs[0]:
-    st.markdown('<div class="neon-title">BIG M METHOD</div>', unsafe_allow_html=True)
+    st.markdown('<div class="neon-title">BIG-M METHOD</div>', unsafe_allow_html=True)
     st.markdown('<div class="neon-subtitle">LINEAR PROGRAMMING SOLVER & VISUALIZER</div>', unsafe_allow_html=True)
 
     st.markdown("""
@@ -592,21 +589,6 @@ with tabs[1]:
             st.session_state["ptype"] = problem_type
 
         if result["status"] == "optimal":
-            # Confetti
-            confetti_html = ""
-            import random
-            colors = ["#00d4ff", "#ff006e", "#39ff14", "#ffbe0b", "#8338ec"]
-            for ci in range(30):
-                left = random.randint(0, 100)
-                delay = random.random() * 2
-                color = colors[ci % len(colors)]
-                confetti_html += (
-                    f'<div class="confetti-piece" style="left:{left}%;'
-                    f'background:{color};animation-delay:{delay:.1f}s;'
-                    f'border-radius:{random.choice(["50%","0"])}"></div>'
-                )
-            st.markdown(confetti_html, unsafe_allow_html=True)
-
             # Optimal banner
             sol = result["solution"]
             sol_parts = " , ".join([f"x{i+1} = {sol[i]:.4f}" for i in range(len(sol))])
