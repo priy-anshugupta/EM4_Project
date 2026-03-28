@@ -248,11 +248,105 @@ st.markdown("""
         padding: 10px 8px;
     }
 }
-.stNumberInput input, .stSelectbox select, .stTextInput input {
-    background: rgba(255,255,255,0.05) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-    color: white !important;
-    border-radius: 8px !important;
+div[data-testid="stTextInput"],
+div[data-testid="stNumberInput"],
+div[data-testid="stSelectbox"] {
+    width: 100%;
+}
+div[data-baseweb="input"],
+div[data-baseweb="base-input"],
+div[data-baseweb="select"] {
+    background: linear-gradient(180deg, rgba(16, 29, 76, 0.62), rgba(11, 23, 62, 0.62)) !important;
+    border: 1px solid rgba(0,212,255,0.22) !important;
+    border-radius: 12px !important;
+    min-height: 50px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+div[data-baseweb="input"]:hover,
+div[data-baseweb="base-input"]:hover,
+div[data-baseweb="select"]:hover {
+    border-color: rgba(0,212,255,0.38) !important;
+}
+div[data-baseweb="input"]:focus-within,
+div[data-baseweb="base-input"]:focus-within,
+div[data-baseweb="select"]:focus-within {
+    border-color: rgba(0,212,255,0.62) !important;
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.16) !important;
+    background: linear-gradient(180deg, rgba(18, 33, 84, 0.75), rgba(14, 29, 72, 0.75)) !important;
+}
+div[data-baseweb="input"] input,
+div[data-baseweb="base-input"] input,
+div[data-baseweb="input"] textarea,
+.stTextInput input,
+.stNumberInput input {
+    color: #f3f7ff !important;
+    caret-color: #00d4ff !important;
+    background: transparent !important;
+    font-weight: 500 !important;
+    -webkit-text-fill-color: #f3f7ff !important;
+    opacity: 1 !important;
+}
+div[data-baseweb="input"] input::placeholder,
+div[data-baseweb="base-input"] input::placeholder,
+div[data-baseweb="input"] textarea::placeholder,
+.stTextInput input::placeholder,
+.stNumberInput input::placeholder {
+    color: rgba(200, 216, 255, 0.55) !important;
+}
+div[data-baseweb="select"] * {
+    color: #eaf2ff !important;
+}
+div[data-baseweb="select"] > div,
+div[data-baseweb="select"] > div > div {
+    background: transparent !important;
+    color: #f3f7ff !important;
+    -webkit-text-fill-color: #f3f7ff !important;
+}
+div[data-baseweb="select"] span,
+div[data-baseweb="select"] input,
+div[data-baseweb="select"] div[aria-live] {
+    color: #f3f7ff !important;
+    -webkit-text-fill-color: #f3f7ff !important;
+    opacity: 1 !important;
+}
+div[data-baseweb="select"] svg {
+    fill: #9dc7ff !important;
+}
+[role="listbox"] {
+    background: rgba(12, 22, 58, 0.98) !important;
+    border: 1px solid rgba(0,212,255,0.25) !important;
+    border-radius: 10px !important;
+}
+[role="option"] {
+    color: #eaf2ff !important;
+    background: transparent !important;
+}
+[role="option"][aria-selected="true"] {
+    background: rgba(0,212,255,0.2) !important;
+    color: #ffffff !important;
+}
+[role="option"]:hover {
+    background: rgba(0,212,255,0.14) !important;
+}
+div[data-baseweb="input"] > div,
+div[data-baseweb="base-input"] > div,
+div[data-baseweb="select"] > div {
+    padding-left: 6px;
+    padding-right: 6px;
+}
+div[data-testid="stNumberInput"] button {
+    background: rgba(13, 26, 68, 0.85) !important;
+    color: #dbe9ff !important;
+    border-left: 1px solid rgba(0,212,255,0.25) !important;
+}
+div[data-testid="stNumberInput"] button:hover {
+    background: rgba(18, 36, 90, 0.95) !important;
+    color: #ffffff !important;
+}
+div[data-testid="stAlert"] {
+    border-radius: 12px;
+    border: 1px solid rgba(0,212,255,0.2);
+    background: rgba(0,212,255,0.08);
 }
 div[data-testid="stExpander"] {
     background: rgba(255,255,255,0.02);
