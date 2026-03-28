@@ -8,6 +8,7 @@
 import streamlit as st
 import numpy as np
 import json
+import re
 from solver import big_m_method, sensitivity_analysis, build_dual, verify_strong_duality
 from solver import complementary_slackness, parametric_rhs_analysis, parametric_obj_analysis
 from utils import (
@@ -380,6 +381,64 @@ with tabs[0]:
 
 
 # ═══════════════════════════════════════════════════════════
+#  HELPER: Input Parsers and Formatters
+# ═══════════════════════════════════════════════════════════
+def parse_equation(eq_str, num_vars):
+    c = [0.0] * num_vars
+    eq_str = eq_str.replace(" ", "").lower()
+    if "=" in eq_str:
+        eq_str = eq_str.split("=")[1]
+        
+    pattern = r'([+-]?\d*\.?\d*)x(\d+)'
+    matches = re.findall(pattern, eq_str)
+    for coef_str, var_idx in matches:
+        idx = int(var_idx) - 1
+        if 0 <= idx < num_vars:
+            if coef_str == '+' or coef_str == '':
+                val = 1.0
+            elif coef_str == '-':
+                val = -1.0
+            else:
+                val = float(coef_str)
+            c[idx] += val
+    return c
+
+def parse_constraint(eq_str, num_vars):
+    eq_str = eq_str.lower()
+    if '<=' in eq_str: op, split_str = '<=', '<='
+    elif '>=' in eq_str: op, split_str = '>=', '>='
+    elif '=' in eq_str: op, split_str = '=', '='
+    else: return None, None, None
+    
+    left, right = eq_str.split(split_str)
+    coeffs = parse_equation(left, num_vars)
+    try:
+        rhs = float(right.strip())
+    except:
+        rhs = 0.0
+    return coeffs, op, rhs
+
+def format_m(val, M=1e6, tol=1e-5):
+    m_part = round(val / M)
+    real_part = val - m_part * M
+    
+    if abs(real_part) < tol: real_str = ""
+    else: real_str = f"{real_part:.2f}".rstrip('0').rstrip('.') if real_part % 1 != 0 else f"{int(real_part)}"
+        
+    if abs(m_part) < tol: m_str = ""
+    else:
+        if abs(m_part - 1) < tol: m_str = "M"
+        elif abs(m_part + 1) < tol: m_str = "-M"
+        else: m_str = f"{int(m_part)}M"
+
+    if not real_str and not m_str: return "0"
+    if not real_str: return m_str
+    if not m_str: return real_str
+    
+    if m_part > 0: return f"{real_str} + {m_str}"
+    else: return f"{real_str} - {m_str[1:]}"
+
+# ═══════════════════════════════════════════════════════════
 #  HELPER: Build tableau HTML
 # ═══════════════════════════════════════════════════════════
 def render_tableau_html(entry, all_col_names):
@@ -392,6 +451,7 @@ def render_tableau_html(entry, all_col_names):
     entering = entry.get("entering")
     leaving = entry.get("leaving")
     pivot_elem = entry.get("pivot_element")
+    ratios = entry.get("ratios", None)
 
     num_rows = len(basis)
     html = f'<div class="tableau-container">'
@@ -402,31 +462,51 @@ def render_tableau_html(entry, all_col_names):
     if leaving:
         html += f'<span class="tag tag-leave">◀ LEAVE: {leaving}</span> '
     if pivot_elem is not None:
-        html += f'<span class="tag" style="background:rgba(255,190,11,0.12);color:#ffbe0b;border:1px solid rgba(255,190,11,0.3);">⬥ PIVOT: {pivot_elem:.4f}</span>'
+        html += f'<span class="tag" style="background:rgba(255,190,11,0.12);color:#ffbe0b;border:1px solid rgba(255,190,11,0.3);">⬥ PIVOT: {format_m(pivot_elem)}</span>'
 
     html += '<table><thead><tr>'
-    html += '<th>Basis</th><th>RHS</th>'
+    html += '<th>Basis</th>'
     for cn in all_col_names:
         html += f'<th>{cn}</th>'
+    html += '<th>RHS</th>'
+    if ratios is not None:
+        html += '<th style="color:#ff006e;">Ratio (RHS/Pivot)</th>'
     html += '</tr></thead><tbody>'
 
     for i in range(num_rows):
-        html += '<tr>'
+        row_style = ' style="background:rgba(255,0,110,0.1);"' if pivot_r is not None and i == pivot_r else ''
+        html += f'<tr{row_style}>'
         html += f'<td style="color:#39ff14; font-weight:600;">{basis[i]}</td>'
-        html += f'<td style="color:#ffbe0b; font-weight:600;">{tableau[i, -1]:.4f}</td>'
+
         for j in range(len(all_col_names)):
             cell_class = ""
+            val_str = format_m(tableau[i, j])
             if pivot_r is not None and pivot_c is not None and i == pivot_r and j == pivot_c:
                 cell_class = ' class="pivot-cell"'
-            html += f'<td{cell_class}>{tableau[i, j]:.4f}</td>'
+            elif pivot_c is not None and j == pivot_c:
+                val_str = f'<span style="color:#39ff14;">{val_str}</span>'
+            html += f'<td{cell_class}>{val_str}</td>'
+
+        html += f'<td style="color:#ffbe0b; font-weight:600;">{format_m(tableau[i, -1])}</td>'
+
+        if ratios is not None:
+            r = ratios[i]
+            r_str = "-" if r == np.inf or r < 0 else f"{r:.4f}"
+            html += f'<td style="color:#ff006e;">{r_str}</td>'
+
         html += '</tr>'
 
     # Z-row
     html += '<tr>'
-    html += '<td style="font-weight:700;">Z</td>'
-    html += f'<td style="font-weight:700;">{tableau[-1, -1]:.4f}</td>'
+    html += '<td style="font-weight:700; color:#00d4ff;">Z</td>'
     for j in range(len(all_col_names)):
-        html += f'<td>{tableau[-1, j]:.4f}</td>'
+        val_str = format_m(tableau[-1, j])
+        if pivot_c is not None and j == pivot_c:
+            val_str = f'<span style="color:#39ff14;">{val_str}</span>'
+        html += f'<td style="font-weight:700; color:#00d4ff;">{val_str}</td>'
+    html += f'<td style="font-weight:700; color:#00d4ff;">{format_m(tableau[-1, -1])}</td>'
+    if ratios is not None:
+        html += '<td></td>'
     html += '</tr>'
 
     html += '</tbody></table></div>'
@@ -457,50 +537,50 @@ with tabs[1]:
     st.markdown("---")
 
     # Objective function input
-    st.markdown("#### Objective Function Coefficients")
-    obj_cols = st.columns(num_vars)
-    c_vals = []
-    for i, col in enumerate(obj_cols):
-        with col:
-            val = st.number_input(f"c(x{i+1})", value=0.0, key=f"obj_{i}", step=1.0)
-            c_vals.append(val)
-
-    # Display objective in LaTeX
-    obj_latex = format_objective_latex(c_vals, problem_type)
-    st.latex(obj_latex)
+    st.markdown("#### Objective Function")
+    st.info("💡 Example format: `5x1 + 4x2` or `Z = 5x1 - 3x2`")
+    obj_str = st.text_input("Enter Objective Equation", key="obj_eq")
+    if obj_str:
+        c_vals = parse_equation(obj_str, num_vars)
+        # Display objective in LaTeX
+        obj_latex = format_objective_latex(c_vals, problem_type)
+        st.latex(obj_latex)
+    else:
+        c_vals = [0.0] * num_vars
 
     st.markdown("---")
 
     # Constraints input
     st.markdown("#### Constraints")
+    st.info("💡 Example formats: `2x1 + x2 <= 10`, `x1 + 3x2 >= 5`")
+    
     A_vals = []
     b_vals = []
     ct_vals = []
-
+    
+    valid_constraints = True
+    
     for i in range(num_cons):
-        st.markdown(f"**Constraint {i+1}**")
-        cols = st.columns(num_vars + 2)
-        row = []
-        for j in range(num_vars):
-            with cols[j]:
-                val = st.number_input(f"a{i+1}{j+1}", value=0.0, key=f"a_{i}_{j}",
-                                      label_visibility="collapsed")
-                row.append(val)
-        A_vals.append(row)
-        with cols[num_vars]:
-            ct = st.selectbox("Type", ["<=", ">=", "="], key=f"ct_{i}", label_visibility="collapsed")
-            ct_vals.append(ct)
-        with cols[num_vars + 1]:
-            rhs = st.number_input("RHS", value=0.0, key=f"b_{i}", label_visibility="collapsed")
-            b_vals.append(rhs)
-
-        # Show constraint in LaTeX
-        st.latex(format_constraint_latex(A_vals[i], ct_vals[i], b_vals[i]))
+        con_str = st.text_input(f"Constraint {i+1}", key=f"con_{i}")
+        if con_str:
+            coeffs, op, rhs = parse_constraint(con_str, num_vars)
+            if op is not None:
+                A_vals.append(coeffs)
+                ct_vals.append(op)
+                b_vals.append(rhs)
+                st.latex(format_constraint_latex(coeffs, op, rhs))
+            else:
+                st.error(f"Invalid format for Constraint {i+1}! Please include <=, >=, or = in the equation.")
+                valid_constraints = False
+        else:
+            A_vals.append([0.0] * num_vars)
+            ct_vals.append("<=")
+            b_vals.append(0.0)
 
     st.markdown("---")
 
     # Solve button
-    if st.button("🚀 Solve with Big M Method", width="stretch", type="primary"):
+    if st.button("🚀 Solve with Big M Method", width="stretch", type="primary", disabled=not (valid_constraints and obj_str)):
         with st.spinner("Running Big M Method..."):
             result = big_m_method(c_vals, A_vals, b_vals, ct_vals, problem_type)
             st.session_state["result"] = result

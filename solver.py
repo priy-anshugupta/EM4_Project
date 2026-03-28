@@ -150,6 +150,11 @@ def big_m_method(c, A, b, constraint_types, problem_type="max"):
                 ratios.append(np.inf)
 
         if all(r == np.inf for r in ratios):
+            iteration_log[-1].update({
+                "entering": entering_var,
+                "pivot_col": pivot_col,
+                "ratios": ratios
+            })
             return {
                 "status": "unbounded",
                 "optimal_value": None,
@@ -162,9 +167,19 @@ def big_m_method(c, A, b, constraint_types, problem_type="max"):
                 "shadow_prices": None,
             }
 
-        pivot_row = int(np.argmin(ratios))
+        valid_ratios = [r if r >= 0 else np.inf for r in ratios]
+        pivot_row = int(np.argmin(valid_ratios))
         leaving_var = row_labels[pivot_row]
         pivot_val = tableau[pivot_row, pivot_col]
+        
+        iteration_log[-1].update({
+            "entering": entering_var,
+            "leaving": leaving_var,
+            "pivot_element": pivot_val,
+            "pivot_row": pivot_row,
+            "pivot_col": pivot_col,
+            "ratios": ratios
+        })
 
         # Pivot operation
         tableau[pivot_row] /= pivot_val
@@ -180,11 +195,6 @@ def big_m_method(c, A, b, constraint_types, problem_type="max"):
             "iteration": iteration,
             "tableau": np.copy(tableau),
             "basis": list(row_labels),
-            "entering": entering_var,
-            "leaving": leaving_var,
-            "pivot_element": pivot_val,
-            "pivot_row": pivot_row,
-            "pivot_col": pivot_col,
         })
 
     # Check for infeasibility

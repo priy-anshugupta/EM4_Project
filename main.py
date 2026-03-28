@@ -11,6 +11,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import re
 
 try:
     from rich.console import Console
@@ -33,9 +34,32 @@ TOLERANCE = 1e-9     # Numerical zero threshold
 
 
 # ─────────────────────────────────────────────────────────────
+#  HELPER: Format values to show Big M explicitly
+# ─────────────────────────────────────────────────────────────
+def format_m(val, M=1e6, tol=1e-5):
+    m_part = round(val / M)
+    real_part = val - m_part * M
+    
+    if abs(real_part) < tol: real_str = ""
+    else: real_str = f"{real_part:.2f}".rstrip('0').rstrip('.') if real_part % 1 != 0 else f"{int(real_part)}"
+        
+    if abs(m_part) < tol: m_str = ""
+    else:
+        if abs(m_part - 1) < tol: m_str = "M"
+        elif abs(m_part + 1) < tol: m_str = "-M"
+        else: m_str = f"{int(m_part)}M"
+
+    if not real_str and not m_str: return "0"
+    if not real_str: return m_str
+    if not m_str: return real_str
+    
+    if m_part > 0: return f"{real_str} + {m_str}"
+    else: return f"{real_str} - {m_str[1:]}"
+
+# ─────────────────────────────────────────────────────────────
 #  HELPER: Pretty-print the Simplex Tableau using Rich
 # ─────────────────────────────────────────────────────────────
-def print_tableau(tableau, col_labels, row_labels, iteration):
+def print_tableau(tableau, col_labels, row_labels, iteration, ratios=None, pivot_row=None, pivot_col=None):
     table = Table(
         title=f"[bold cyan]ITERATION {iteration}[/bold cyan]", 
         show_header=True, 
@@ -44,25 +68,56 @@ def print_tableau(tableau, col_labels, row_labels, iteration):
     )
     
     table.add_column("Basis", style="bold green", width=10)
-    table.add_column("RHS", justify="right", style="bold yellow")
-    
     for c in col_labels:
         table.add_column(c, justify="right")
+    table.add_column("RHS", justify="right", style="bold yellow")
+    
+    has_ratios = ratios is not None
+    if has_ratios:
+        table.add_column("Ratio (RHS/Pivot)", justify="right", style="bold red")
 
     for i, label in enumerate(row_labels):
-        row = [label, f"{tableau[i, -1]:.4f}"]
-        row += [f"{tableau[i, j]:.4f}" for j in range(len(col_labels))]
-        table.add_row(*row)
+        style = ""
+        if i == pivot_row:
+            style = "on dark_red"
+            
+        row = [label]
+        for j in range(len(col_labels)):
+            cell_val = format_m(tableau[i, j])
+            if j == pivot_col and i == pivot_row:
+                row.append(f"[bold bright_yellow]{cell_val}[/bold bright_yellow]")
+            elif j == pivot_col:
+                row.append(f"[green]{cell_val}[/green]")
+            else:
+                row.append(cell_val)
+                
+        row.append(format_m(tableau[i, -1]))
+        
+        if has_ratios:
+            r = ratios[i]
+            r_str = "-" if r == np.inf or r < 0 else f"{r:.4f}"
+            row.append(r_str)
+            
+        table.add_row(*row, style=style)
 
     # Z-Row
     table.add_section()
     z_row = tableau[-1]
-    z_str = ["Z", f"{z_row[-1]:.4f}"] + [f"{z_row[j]:.4f}" for j in range(len(col_labels))]
+    z_str = ["Z"]
+    for j in range(len(col_labels)):
+        val = format_m(z_row[j])
+        if j == pivot_col:
+            z_str.append(f"[green]{val}[/green]")
+        else:
+            z_str.append(val)
+    z_str.append(format_m(z_row[-1]))
+    if has_ratios:
+        z_str.append("")
+        
     table.add_row(*z_str, style="bold blue")
 
     console.print(table)
     console.print("")
-
 
 # ─────────────────────────────────────────────────────────────
 #  VISUALIZATION: Plot Feasible Region & Optimal Solution
@@ -224,44 +279,50 @@ def big_m_method(c, A, b, constraint_types, problem_type="max", silent=False):
         console.rule("[bold cyan]BIG M METHOD — SIMPLEX TABLEAU ITERATIONS[/bold cyan]")
 
     while True:
-        if not silent:
-            print_tableau(tableau, all_col_names, row_labels, iteration)
-        iterations_log.append(np.copy(tableau))
+            iterations_log.append(np.copy(tableau))
+            z_row = tableau[-1, :-1]
+            
+            if np.all(z_row >= -TOLERANCE):
+                if not silent:
+                    print_tableau(tableau, all_col_names, row_labels, iteration)
+                break
 
-        z_row = tableau[-1, :-1]
-        if np.all(z_row >= -TOLERANCE):
-            break
+            pivot_col = int(np.argmin(z_row))
+            
+            ratios = []
+            for i in range(num_constraints):
+                if tableau[i, pivot_col] > TOLERANCE:
+                    ratios.append(tableau[i, -1] / tableau[i, pivot_col])
+                else:
+                    ratios.append(np.inf)
 
-        pivot_col = int(np.argmin(z_row))
-        if not silent:
-            console.print(f"[bold green]→ Entering variable:[/bold green] {all_col_names[pivot_col]}")
+            pivot_row = None
+            if not all(r == np.inf for r in ratios):
+                valid_ratios = [r if r >= 0 else np.inf for r in ratios]
+                pivot_row = int(np.argmin(valid_ratios))
 
-        ratios = []
-        for i in range(num_constraints):
-            if tableau[i, pivot_col] > TOLERANCE:
-                ratios.append(tableau[i, -1] / tableau[i, pivot_col])
-            else:
-                ratios.append(np.inf)
-
-        if all(r == np.inf for r in ratios):
             if not silent:
-                console.print("\n[bold red]✗ Problem is UNBOUNDED.[/bold red]")
-            return {"status": "unbounded", "optimal_value": None, "solution": None, "iterations": len(iterations_log)}
+                print_tableau(tableau, all_col_names, row_labels, iteration, ratios, pivot_row, pivot_col)
+                console.print(f"[bold green]→ Entering variable:[/bold green] {all_col_names[pivot_col]}")
+                
+            if pivot_row is None:
+                if not silent:
+                    console.print("\n[bold red]✗ Problem is UNBOUNDED.[/bold red]")
+                return {"status": "unbounded", "optimal_value": None, "solution": None, "iterations": len(iterations_log)}
 
-        pivot_row = int(np.argmin(ratios))
-        if not silent:
-            console.print(f"[bold red]→ Leaving variable:[/bold red]  {row_labels[pivot_row]}")
-            console.print(f"[bold yellow]→ Pivot element:[/bold yellow]     {tableau[pivot_row, pivot_col]:.4f}\n")
+            if not silent:
+                console.print(f"[bold red]→ Leaving variable:[/bold red]  {row_labels[pivot_row]}")
+                console.print(f"[bold yellow]→ Pivot element:[/bold yellow]     {format_m(tableau[pivot_row, pivot_col])}\n")
 
-        pivot_val = tableau[pivot_row, pivot_col]
-        tableau[pivot_row] /= pivot_val
-        for i in range(num_constraints + 1):
-            if i != pivot_row:
-                tableau[i] -= tableau[i, pivot_col] * tableau[pivot_row]
+            pivot_val = tableau[pivot_row, pivot_col]
+            tableau[pivot_row] /= pivot_val
+            for i in range(num_constraints + 1):
+                if i != pivot_row:
+                    tableau[i] -= tableau[i, pivot_col] * tableau[pivot_row]
 
-        row_labels[pivot_row] = all_col_names[pivot_col]
-        basis_indices[pivot_row] = pivot_col
-        iteration += 1
+            row_labels[pivot_row] = all_col_names[pivot_col]
+            basis_indices[pivot_row] = pivot_col
+            iteration += 1
 
     for i, label in enumerate(row_labels):
         if label.startswith("a") and tableau[i, -1] > TOLERANCE:
@@ -320,6 +381,44 @@ def print_result(result, var_names=None, problem_type="max"):
 
 
 # ─────────────────────────────────────────────────────────────
+#  INPUT PARSERS
+# ─────────────────────────────────────────────────────────────
+def parse_equation(eq_str, num_vars):
+    c = [0.0] * num_vars
+    eq_str = eq_str.replace(" ", "").lower()
+    if "=" in eq_str:
+        eq_str = eq_str.split("=")[1]
+        
+    pattern = r'([+-]?\d*\.?\d*)x(\d+)'
+    matches = re.findall(pattern, eq_str)
+    for coef_str, var_idx in matches:
+        idx = int(var_idx) - 1
+        if 0 <= idx < num_vars:
+            if coef_str == '+' or coef_str == '':
+                val = 1.0
+            elif coef_str == '-':
+                val = -1.0
+            else:
+                val = float(coef_str)
+            c[idx] += val
+    return c
+
+def parse_constraint(eq_str, num_vars):
+    eq_str = eq_str.lower()
+    if '<=' in eq_str: op, split_str = '<=', '<='
+    elif '>=' in eq_str: op, split_str = '>=', '>='
+    elif '=' in eq_str: op, split_str = '=', '='
+    else: return None, None, None
+    
+    left, right = eq_str.split(split_str)
+    coeffs = parse_equation(left, num_vars)
+    try:
+        rhs = float(right.strip())
+    except:
+        rhs = 0.0
+    return coeffs, op, rhs
+
+# ─────────────────────────────────────────────────────────────
 #  INTERACTIVE MODE
 # ─────────────────────────────────────────────────────────────
 def interactive_mode():
@@ -330,24 +429,26 @@ def interactive_mode():
     num_cons = IntPrompt.ask("Enter the number of [cyan]constraints[/cyan]")
 
     console.print("\n[bold]1. Objective Function ([/bold]" + problem_type.upper() + "[bold])[/bold]")
-    c = []
-    for i in range(num_vars):
-        c.append(FloatPrompt.ask(f"  Coefficient for [cyan]x{i+1}[/cyan]"))
+    console.print("Example format: [cyan]5x1 + 4x2[/cyan] or [cyan]Z = 5x1 - 3x2[/cyan]")
+    obj_str = Prompt.ask("Enter Objective Function")
+    c = parse_equation(obj_str, num_vars)
 
     console.print("\n[bold]2. Constraints[/bold]")
+    console.print("Example formats: [cyan]2x1 + x2 <= 10[/cyan], [cyan]x1 + 3x2 >= 5[/cyan]")
     A = []
     b = []
     constraint_types = []
     for i in range(num_cons):
-        console.print(f"\n  [magenta]Constraint {i+1}:[/magenta]")
-        row = []
-        for j in range(num_vars):
-            row.append(FloatPrompt.ask(f"    Coefficient for [cyan]x{j+1}[/cyan]"))
-        A.append(row)
-        ctype = Prompt.ask("    Type", choices=["<=", ">=", "="], default="<=")
-        constraint_types.append(ctype)
-        rhs = FloatPrompt.ask("    RHS value")
-        b.append(rhs)
+        while True:
+            con_str = Prompt.ask(f"Enter Constraint {i+1}")
+            coeffs, op, rhs = parse_constraint(con_str, num_vars)
+            if op is not None:
+                A.append(coeffs)
+                constraint_types.append(op)
+                b.append(rhs)
+                break
+            else:
+                console.print("[red]Invalid format! Please include <=, >=, or = in the equation.[/red]")
 
     console.print("\n[bold cyan]Processing your problem...[/bold cyan]")
     
