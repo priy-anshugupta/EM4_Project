@@ -72,33 +72,55 @@ python main.py
 
 ---
 
-## 🧠 Methodology
+## 📖 Documentation: Code, Methodology, & Example Usage
 
-### Step 1 — Standard Form Conversion
-- **≤ constraint** → Add a **slack variable** (s ≥ 0)
-- **≥ constraint** → Subtract a **surplus variable** + Add an **artificial variable** (a ≥ 0)
-- **= constraint** → Add an **artificial variable** only
+### 1️⃣ Code Explanation & Architecture
 
-### Step 2 — Modified Objective Function
-```
-Maximise: Z = c₁x₁ + c₂x₂ + ... - M·a₁ - M·a₂ - ...
-```
-*(For minimisation, the penalty is **+M**.)*
+The project is structured into modular components, decoupling the mathematical engine from the user interfaces:
 
-### Step 3 — Initial Tableau Setup
-- Artificial variables form the **initial basis**.
-- Z-row is updated to eliminate basic variable coefficients.
+- **`solver.py` (Core Engine)**: Contains the `big_m_method()` function, which acts as the core Simplex solver. It handles converting inequalities to standard form, initializing the Big M penalty (`1e6`), performing pivot operations, executing the minimum ratio test, and returning a rich dictionary (iteration history, final tableau, shadow prices). It also hosts the `build_dual()` and `sensitivity_analysis()` functions.
+- **`app.py` (Streamlit Web UI)**: Provides a modern web application with 7 interactive tabs. It maps user inputs directly into the `solver.py` engine and processes the output for visualization.
+- **`utils.py` (Visualizations & Formatting)**: Stores modular helper functions for generating interactive Plotly charts (2D feasible region, 3D objective surfaces, simplex traversal paths) and parsing math formula strings into LaTeX notation.
+- **`main.py` (CLI interface)**: A traditional command-line interface utilizing `rich` for styled terminal output. It takes user prompts, solves the LP via the core algorithm, builds matplotlib charts, and prints formatted step-by-step tableaux.
 
-### Step 4 — Simplex Iterations
-Repeat until optimal:
-1. **Entering variable**: column with most negative Z-row value.
-2. **Leaving variable**: minimum ratio test (θ = RHS / pivot column).
-3. **Row operations**: normalise pivot row, eliminate pivot column in all other rows.
+### 2️⃣ Methodology
 
-### Step 5 — Optimality & Feasibility Check
-- **Optimal**: all Z-row coefficients ≥ 0.
-- **Infeasible**: artificial variable remains in basis with value > 0.
-- **Unbounded**: no valid pivot row exists (all ratios = ∞).
+The **Big M Method** algorithm is mathematically implemented as follows:
+- **Step 1 — Standard Form Conversion**:
+  - **≤ constraint** → Add a **slack variable** ($s \geq 0$)
+  - **≥ constraint** → Subtract a **surplus variable** + Add an **artificial variable** ($a \geq 0$)
+  - **= constraint** → Add an **artificial variable** only
+- **Step 2 — Modified Objective Function**:
+  - `Maximise: Z = c₁x₁ + c₂x₂ + ... - M·a₁ - M·a₂ - ...` *(Minimisation uses +M)*
+- **Step 3 — Initial Tableau & Zero-out**: Artificial variables form the initial basis. The Z-row is updated to eliminate basic variable coefficients.
+- **Step 4 — Simplex Iterations**: Repeat until optimal:
+  1. **Entering variable**: Column with the most negative Z-row value.
+  2. **Leaving variable**: Minimum positive ratio test ($\theta = \text{RHS} / \text{pivot column}$).
+  3. **Row operations**: Normalise pivot row, eliminate pivot column in all other rows.
+- **Step 5 — Optimality**: Reached when all Z-row coefficients $\geq 0$.
+
+### 3️⃣ Example Usage
+
+**Scenario:** We want to solve a Minimization LPP using the CLI.
+**Problem:**
+MinZ = 4x₁ + x₂
+Subject to:
+3x₁ + x₂ = 3
+4x₁ + 3x₂ ≥ 6
+x₁ + 2x₂ ≤ 4
+x₁, x₂ ≥ 0
+
+**CLI Walkthrough Example:**
+1. Start the CLI using `python main.py`.
+2. **Enter Problem Type:** Type `min` and hit enter.
+3. **Number of Variables:** Enter `2`.
+4. **Number of Constraints:** Enter `3`.
+5. **Objective Coefficients:** Enter `4` for $x_1$ and `1` for $x_2$.
+6. **Constraint 1:** Enter `3`, `1`, select `=`, RHS = `3`.
+7. **Constraint 2:** Enter `4`, `3`, select `>=`, RHS = `6`.
+8. **Constraint 3:** Enter `1`, `2`, select `<=`, RHS = `4`.
+
+The solver will execute and output the step-by-step table highlighting the pivot cells until the final answer ($Z = 3.4$ at $x_1=0.6, x_2=1.2$) surfaces.
 
 ---
 
