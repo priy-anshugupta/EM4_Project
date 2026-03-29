@@ -20,17 +20,17 @@ try:
     from rich.prompt import Prompt, FloatPrompt, IntPrompt
     from rich import print as rprint
 except ImportError:
-    print("This script requires the 'rich' library for fancy outputs.")
-    print("Please install it by running: pip install rich")
+    print("Error: This script requires the 'rich' library for fancy outputs.")
+    print("Please install it by running the following command: pip install rich")
     exit(1)
 
 console = Console()
 
 # ─────────────────────────────────────────────────────────────
-#  CONFIGURATION
+#  CONFIGURATION & CONSTANTS
 # ─────────────────────────────────────────────────────────────
-BIG_M = 1e6          # The "Big M" penalty constant
 TOLERANCE = 1e-9     # Numerical zero threshold
+BIG_M = 1e6          # The "Big M" penalty constant
 
 
 # ─────────────────────────────────────────────────────────────
@@ -461,6 +461,20 @@ def interactive_mode():
 
 
 # ─────────────────────────────────────────────────────────────
+#  PRE-CODED EXAMPLES
+# ─────────────────────────────────────────────────────────────
+def show_examples():
+    console.rule("[bold cyan]EXAMPLE 1: Maximise Z = 5x₁ + 4x₂[/bold cyan]")
+    c, A, b, constraint_types = [5, 4], [[6, 4], [1, 2]], [24, 6], ["<=", ">="]
+    result = big_m_method(c, A, b, constraint_types, problem_type="max")
+    print_result(result, ["x1", "x2"], "max")
+
+    console.rule("[bold cyan]EXAMPLE 2: Minimise Z = 2x₁ + 3x₂[/bold cyan]")
+    c, A, b, constraint_types = [2, 3], [[1, 1], [1, 3]], [4, 6], ["=", ">="]
+    result = big_m_method(c, A, b, constraint_types, problem_type="min")
+    print_result(result, ["x1", "x2"], "min")
+
+# ─────────────────────────────────────────────────────────────
 #  EXPLANATION: Big M Method
 # ─────────────────────────────────────────────────────────────
 def show_explanation():
@@ -492,20 +506,6 @@ Artificial variables are purely mathematical placeholders—they have no real-wo
           • [bold red]Infeasible:[/bold red] An artificial variable remains in the basis with a positive value.
 """
     console.print(explanation_text)
-    
-# ─────────────────────────────────────────────────────────────
-#  PRE-CODED EXAMPLES
-# ─────────────────────────────────────────────────────────────
-def show_examples():
-    console.rule("[bold cyan]EXAMPLE 1: Maximise Z = 5x₁ + 4x₂[/bold cyan]")
-    c, A, b, constraint_types = [5, 4], [[6, 4], [1, 2]], [24, 6], ["<=", ">="]
-    result = big_m_method(c, A, b, constraint_types, problem_type="max")
-    print_result(result, ["x1", "x2"], "max")
-
-    console.rule("[bold cyan]EXAMPLE 2: Minimise Z = 2x₁ + 3x₂[/bold cyan]")
-    c, A, b, constraint_types = [2, 3], [[1, 1], [1, 3]], [4, 6], ["=", ">="]
-    result = big_m_method(c, A, b, constraint_types, problem_type="min")
-    print_result(result, ["x1", "x2"], "min")
 
 
 # ─────────────────────────────────────────────────────────────
