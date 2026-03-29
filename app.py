@@ -703,7 +703,16 @@ with tabs[1]:
             st.session_state["b"] = b_vals
             st.session_state["ct"] = ct_vals
             st.session_state["ptype"] = problem_type
+            st.session_state["current_solver_params"] = {
+                "c": c_vals, "A": A_vals, "b": b_vals, "ct": ct_vals, "ptype": problem_type
+            }
 
+    current_params = {"c": c_vals, "A": A_vals, "b": b_vals, "ct": ct_vals, "ptype": problem_type}
+    show_result = ("result" in st.session_state and 
+                   st.session_state.get("current_solver_params") == current_params)
+
+    if show_result:
+        result = st.session_state["result"]
         if result["status"] == "optimal":
             # Optimal banner
             sol = result["solution"]

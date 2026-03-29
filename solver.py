@@ -456,18 +456,12 @@ def build_dual(c, A, b, constraint_types, problem_type="max"):
         dual_c = b.tolist()
         dual_A = A.T.tolist()
         dual_b = c.tolist()
-        dual_constraint_types = []
-
-        for ct in constraint_types:
-            if ct == "<=":
-                dual_constraint_types.append(">=")
-            elif ct == ">=":
-                dual_constraint_types.append("<=")
-            else:  # "="
-                dual_constraint_types.append(">=")
+        
+        # Since standard primal MAX assumes x_j >= 0, all dual constraints are >=
+        dual_constraint_types = [">="] * num_vars
 
         # Dual variable sign:
-        # <= constraint -> y_i >= 0 (unrestricted handled as >=0 for simplicity)
+        # <= constraint -> y_i >= 0
         # >= constraint -> y_i <= 0
         # = constraint -> y_i unrestricted
         dual_var_signs = []
@@ -484,15 +478,9 @@ def build_dual(c, A, b, constraint_types, problem_type="max"):
         dual_c = b.tolist()
         dual_A = A.T.tolist()
         dual_b = c.tolist()
-        dual_constraint_types = []
-
-        for ct in constraint_types:
-            if ct == ">=":
-                dual_constraint_types.append("<=")
-            elif ct == "<=":
-                dual_constraint_types.append(">=")
-            else:
-                dual_constraint_types.append("<=")
+        
+        # Since standard primal MIN assumes x_j >= 0, all dual constraints are <=
+        dual_constraint_types = ["<="] * num_vars
 
         dual_var_signs = []
         for ct in constraint_types:
