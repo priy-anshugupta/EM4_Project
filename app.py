@@ -441,7 +441,7 @@ with tabs[0]:
             </div>
             """, unsafe_allow_html=True)
 
-    st.markdown("#### 📐 How It Works")
+    st.markdown('<h4 style="margin-top: 35px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">📐 <span>How It Works</span></h4>', unsafe_allow_html=True)
     st.markdown("""
     <div class="glass-card">
         <table style="width:100%; border-collapse:collapse;">
@@ -468,6 +468,14 @@ with tabs[0]:
                 </td>
             </tr>
         </table>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<h4 style="margin-top: 35px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">💡 <span>Why Big-M Method? How It Differs & Why It Matters</span></h4>', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="glass-card" style="padding: 28px; line-height: 1.8; color: rgba(255,255,255,0.8); font-size: 1.05rem;">
+        <p>Unlike standard simplex approaches that rely only on slack variables (and therefore work best with ≤ constraints), the Big-M Method is specifically designed to handle ≥ and = constraints by introducing artificial variables. What makes it distinct is the use of a very large penalty value (M) in the objective function, which forces these artificial variables out of the final solution if a feasible solution exists. In contrast, methods like the Two-Phase Simplex separate feasibility and optimization into two stages, whereas Big-M integrates both into a single process.</p>
+        <p style="margin-top: 16px;">The key benefit of the Big-M Method is its simplicity and directness—it allows you to solve complex linear programming problems in one unified framework without switching phases. It is particularly useful in educational settings and quick implementations where understanding the role of feasibility is important. Additionally, it provides clear insight into infeasibility: if artificial variables remain in the optimal solution, the problem has no feasible solution. Overall, Big-M offers a straightforward, intuitive way to extend the simplex method to a wider class of problems while maintaining interpretability.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -612,7 +620,7 @@ with tabs[1]:
     st.markdown("### 🧮 Interactive LP Solver")
     st.markdown("Enter your Linear Programming problem below.")
 
-    sol_col1, sol_col2 = st.columns([1, 1])
+    sol_col1, sol_col2 = st.columns([1, 1], vertical_alignment="center")
 
     with sol_col1:
         problem_type = st.selectbox("Problem Type", ["max", "min"],
