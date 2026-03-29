@@ -3,6 +3,14 @@
 
 ---
 
+## ❓ Why Big M Method?
+
+The Big M Method is used when:
+- No obvious initial BFS exists
+- Constraints include ≥ or = types
+
+It ensures feasibility by penalizing artificial variables heavily.
+
 ## 📌 Project Overview
 
 This project implements the **Big M Method**, a technique in **Linear Programming** used to find an initial Basic Feasible Solution (BFS) when the standard form of an LP problem contains **≥ (greater than or equal to)** or **= (equality)** constraints. By introducing artificial variables with a heavy penalty (M), the algorithm forces them out of the basis to find the optimal solution.
