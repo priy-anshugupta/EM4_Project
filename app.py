@@ -638,7 +638,14 @@ with tabs[1]:
 
     # Objective function input
     st.markdown("#### Objective Function")
-    st.info("💡 Example format: `5x1 + 4x2` or `Z = 5x1 - 3x2`")
+    st.markdown("""
+    <div style="background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2); border-radius: 12px; padding: 16px; margin-bottom: 1rem; display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 1.2em;">💡</span>
+        <span style="font-size: 1.2em; color: white; letter-spacing: 0.5px; word-spacing: 1px;">
+            Example format: <code style="color: white; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px; margin: 0 4px; font-size: 0.95em;">5x1 + 4x2</code> or <code style="color: white; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px; margin: 0 4px; font-size: 0.95em;">Z = 5x1 - 3x2</code>
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
     obj_str = st.text_input("Enter Objective Equation", key="obj_eq")
     if obj_str:
         c_vals = parse_equation(obj_str, num_vars)
@@ -652,7 +659,14 @@ with tabs[1]:
 
     # Constraints input
     st.markdown("#### Constraints")
-    st.info("💡 Example formats: `2x1 + x2 <= 10`, `x1 + 3x2 >= 5`")
+    st.markdown("""
+    <div style="background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2); border-radius: 12px; padding: 16px; margin-bottom: 1rem; display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 1.2em;">💡</span>
+        <span style="font-size: 1.2em; color: white; letter-spacing: 0.5px; word-spacing: 1px;">
+            Example formats: <code style="color: white; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px; margin: 0 4px; font-size: 0.95em;">2x1 + x2 <= 10</code> , <code style="color: white; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px; margin: 0 4px; font-size: 0.95em;">x1 + 3x2 >= 5</code>
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
     
     A_vals = []
     b_vals = []
