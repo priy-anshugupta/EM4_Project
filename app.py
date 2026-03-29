@@ -177,10 +177,10 @@ st.markdown("""
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: 14px;
-    padding: 24px;
+    padding: 25px;
     text-align: center;
     transition: all 0.35s ease;
-    height: 200px;
+    height: 202px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -480,9 +480,9 @@ with tabs[0]:
     """, unsafe_allow_html=True)
 
 
-# ═══════════════════════════════════════════════════════════
-#  HELPER: Input Parsers and Formatters
-# ═══════════════════════════════════════════════════════════
+# ─────────────────────────────────────────────────────────────
+#  HELPER FUNCTIONS: Input Parsers and Formatters
+# ─────────────────────────────────────────────────────────────
 def parse_equation(eq_str, num_vars):
     c = [0.0] * num_vars
     eq_str = eq_str.replace(" ", "").lower()
