@@ -1,5 +1,9 @@
-# Big M Method — Linear Programming Solver & Visualizer
-### Assignment 9 | EM-4 (BSC07) | INFT Engineering
+# 🧮 Big M Method — Linear Programming Solver & Visualizer
+![Python Version](https://img.shields.io/badge/python-3.7%2B-blue.svg)
+![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit)
+![Operations Research](https://img.shields.io/badge/Course-EM--4%20(BSC07)-success)
+
+**Assignment 9 | EM-4 (BSC07) | INFT Engineering**
 
 ---
 
@@ -183,13 +187,13 @@ EM4_Project/
 ### 🎓 Prepared By: Group 2
 **Topic:** Big-M Method (LPP)
 
-| Name | Roll Number | Role |
-| :--- | :--- | :--- |
-| **Priyanshu Gupta** | 24101B0037 | Team Leader (TL) |
-| **Aashutosh Mahajan** | 24101B0063 | Team Member |
-| **Atharv Raut** | 24101B0052 | Team Member |
-| **Aditya Patra** | 24101B0072 | Team Member |
-| **Ronak Boddu** | 24101B0044 | Team Member |
-| **Prem Ranmale** | 24101B0018 | Team Member |
+| Role | Name | Roll Number | 
+| :--- | :--- | :--- | 
+| 👑 **Team Leader (TL)** | **Priyanshu Gupta** | 24101B0037 | 
+| 👨‍💻 **Team Member** | **Aashutosh Mahajan** | 24101B0063 | 
+| 👨‍💻 **Team Member** | **Atharv Raut** | 24101B0052 | 
+| 👨‍💻 **Team Member** | **Aditya Patra** | 24101B0072 | 
+| 👨‍💻 **Team Member** | **Ronak Boddu** | 24101B0044 | 
+| 👨‍💻 **Team Member** | **Prem Ranmale** | 24101B0018 | 
 
 *Assignment 9 | EM-4 (BSC07) | INFT Department*
