@@ -29,7 +29,7 @@ The project ships with **two interfaces**:
 
 | Feature | Description |
 |:---|:---|
-| **Interactive Solver** | Input any LP problem (MAX / MIN) with mixed ≤, ≥, = constraints |
+| **Interactive Solver** | Input LP problem (MAX / MIN) with mixed ≤, ≥, = constraints |
 | **Step-by-Step Tableaux** | Color-coded simplex iterations with pivot element highlighting |
 | **2D Feasible Region** | Interactive Plotly chart showing constraints, feasible region, corner points & optimal solution |
 | **3D Objective Surface** | 3D surface plot of the objective function over the feasible region |
